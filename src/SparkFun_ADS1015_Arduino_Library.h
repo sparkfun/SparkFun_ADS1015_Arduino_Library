@@ -31,9 +31,27 @@
 #include "WProgram.h"
 #endif
 
-#include <Wire.h>
 
-#define ADS1015_DEFAULT_ADDRESS 0x48 //7-bit unshifted default I2C Address
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+
+#include "Wire.h"
+
+#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+//Teensy
+#include "i2c_t3.h"
+
+#else
+//#include "i2c_t3.h"
+//#include "Wire.h"
+//The catch-all default is 32
+#define I2C_BUFFER_LENGTH 32
+
+#endif
+
+#define ADS1015_ADDRESS_GND 0x48 //7-bit unshifted default I2C Address
+#define ADS1015_ADDRESS_VDD 0x49
+#define ADS1015_ADDRESS_SDA 0x4A
+#define ADS1015_ADDRESS_SCL 0x4B
 
 #define I2C_SPEED_STANDARD        100000
 #define I2C_SPEED_FAST            400000
@@ -77,9 +95,19 @@
 class ADS1015 {
   public:
     //By default use Wire, standard I2C speed, and the default ADS1015 address
-    boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_DEFAULT_ADDRESS, long baud = 9600);
+	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 
-    int16_t getAnalogData(uint8_t channel);
+    boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND, long baud = 9600);
+
+	#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+	//Teensy
+	boolean begin(i2c_t3 &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND, long baud = 9600);
+	
+	#endif
+
+
+    
+	int16_t getAnalogData(uint8_t channel);
 
     //boolean available(); //True if OS bit is set
     //void softReset(); //Resets the IC via software
@@ -96,9 +124,18 @@ class ADS1015 {
     //Variables
 
   private:
+  
+	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+
+	TwoWire *_i2cPort;
+
+	#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+	//Teensy
+	i2c_t3 *_i2cPort;
+	
+	#endif
     //uint8_t printI2CError(uint8_t errorCode); //Prints endTransmission statuses
 
-    TwoWire *_i2cPort; //The generic connection to user's chosen I2C hardware
     uint8_t _i2caddr;
 
     boolean _printDebug = false; //Flag to print the serial commands we are sending to the Serial port for debug
