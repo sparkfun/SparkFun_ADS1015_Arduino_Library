@@ -1,5 +1,5 @@
 /*
-  This is a library written for the ADS1015 Human Presence Sensor.
+  This is a library written for the ADS1015 ADC->I2C.
 
   Written by Nathan Seidle @ SparkFun Electronics, March 10th, 2017
   Revised by Andy England @ SparkFun Electronics, October 17th, 2017
@@ -59,6 +59,7 @@
 //Register addresses
 #define ADS1015_DELAY                (1)
 
+
 //Pointer Register
 #define ADS1015_POINTER_CONVERT      (0x00)
 #define ADS1015_POINTER_CONFIG       (0x01)
@@ -90,38 +91,45 @@
 #define ADS1015_CONFIG_PGA_2         (0X0400)  // +/- 2.048v
 #define ADS1015_CONFIG_PGA_4         (0X0600)  // +/- 1.024v
 #define ADS1015_CONFIG_PGA_8         (0X0800)  // +/- 0.512v
-#define ADS1015_CONFIG_PGA_16        (0X0a00)  // +/- 0.256v
+#define ADS1015_CONFIG_PGA_16        (0X0A00)  // +/- 0.256v
 
 class ADS1015 {
   public:
     //By default use Wire, standard I2C speed, and the default ADS1015 address
 	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 
-    boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND, long baud = 9600);
+    boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
 
 	#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy
-	boolean begin(i2c_t3 &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND, long baud = 9600);
+	boolean begin(i2c_t3 &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
+	
+	#else
+	
+	boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
 	
 	#endif
 
+	uint16_t getAnalogData(uint8_t channel);
+	float getScaledAnalogData(uint8_t channel);
+	void calibrate();
+	
+	float mapf(float val, float in_min, float in_max, float out_min, float out_max);
+	
+    boolean available(); //True if OS bit is set
 
-    
-	int16_t getAnalogData(uint8_t channel);
+    void setMode(uint16_t mode); //Set mode of the sensor. Mode 0 is continuous read mode
+	uint16_t getMode();
+	
+	void setGain(uint16_t gain);
+	uint16_t getGain();
 
-    //boolean available(); //True if OS bit is set
-    //void softReset(); //Resets the IC via software
-
-    //void setMode(uint8_t mode = ADS1015_CONFIG_MODE_CONT); //Set mode of the sensor. Mode 0 is continuous read mode
-
-    //void enableDebugging(Stream &debugPort = Serial); //Output various extra messages to help with debug
-    //void disableDebugging();
+	void setSampleRate(uint16_t sampleRate);
+	uint16_t getSampleRate();
 
     uint16_t readRegister(uint8_t location); //Basic read of a register
     void writeRegister(uint8_t location, uint16_t val); //Writes to a location
     uint16_t readRegister16(byte location); //Reads a 16bit value
-
-    //Variables
 
   private:
   
@@ -134,9 +142,17 @@ class ADS1015 {
 	i2c_t3 *_i2cPort;
 	
 	#endif
-    //uint8_t printI2CError(uint8_t errorCode); //Prints endTransmission statuses
 
+	
+
+	uint16_t _mode = ADS1015_CONFIG_MODE_CONT;
+	uint16_t _gain = ADS1015_CONFIG_PGA_2/3;
+	uint16_t _sampleRate = ADS1015_CONFIG_RATE_1600HZ;
+	
     uint8_t _i2caddr;
+	
+	//Array is structured as calibrationValues[finger][lo/hi]
+	uint16_t calibrationValues[2][2] = {{0, 0}, {0, 0}};
 
     boolean _printDebug = false; //Flag to print the serial commands we are sending to the Serial port for debug
 

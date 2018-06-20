@@ -29,56 +29,45 @@
 //Returns false if sensor does not respond
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 
-boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr, long baud)
+boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
 
-  //_i2cPort->begin();
-  //_i2cPort->setClock(i2cSpeed);
+  _i2cPort->setClock(i2cSpeed);
 
   _i2caddr = i2caddr;
-
-  Serial.begin(baud);
-
-  //setMode(ADS1015_CONFIG_MODE_CONT); //Set to continuous read
 
   return (true); //Success!
 }
 
 #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy 3.6
-boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr, long baud)
+boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
 
-  //_i2cPort->begin();
-  //_i2cPort->setClock(i2cSpeed);
+  _i2cPort->setClock(i2cSpeed);
 
   _i2caddr = i2caddr;
-
-  Serial.begin(baud);
-
-  //setMode(ADS1015_CONFIG_MODE_CONT); //Set to continuous read
 
   return (true); //Success!
 }
 #endif
 
-
-
 //Returns the decimal value of sensor channel
-int16_t ADS1015::getAnalogData(uint8_t channel)
+uint16_t ADS1015::getAnalogData(uint8_t channel)
 {
 	if (channel > 3) {
 		return 0;
 	}
 	
 	uint16_t config = ADS1015_CONFIG_OS_SINGLE   |
-					  ADS1015_CONFIG_MODE_SINGLE |
-					  ADS1015_CONFIG_RATE_2400HZ;
-					  
+					  _mode |
+					  _sampleRate;
+			
+	config |= _gain;		  
 	
 	switch (channel)
     {
@@ -102,45 +91,86 @@ int16_t ADS1015::getAnalogData(uint8_t channel)
     return readRegister(ADS1015_POINTER_CONVERT) >> 4;
 }
 
-//Set the mode. Continuous mode 0 is favored
-/*void ADS1015::setMode(uint8_t mode)
+//Returns a value between 0 and 1 based on how bent the finger is. This function will not work with an uncalibrated sensor
+float ADS1015::getScaledAnalogData (uint8_t channel)
 {
-  if (mode > ADS1015_MODE_3) mode = ADS1015_MODE_0; //Default to mode 0
-  if (mode == 0b011) mode = ADS1015_MODE_0; //0x03 is prohibited
+	return mapf(getAnalogData(channel), calibrationValues[channel][0], calibrationValues[channel][1], 0, 1);
+}
 
-  //Read, mask set, write
-  byte currentSettings = readRegister(ADS1015_ECNTL1);
+void ADS1015::calibrate ()
+{
+	for (int finger = 0; finger < 2; finger++)
+	{
+		uint16_t value = getAnalogData(finger);
+		if ((value > calibrationValues[finger][1] || calibrationValues[finger][1] == 0) && value < 1094)
+		{
+			calibrationValues[finger][1] = value;
+		}
+		else if (value < calibrationValues[finger][0] || calibrationValues[finger][0] == 0)
+		{
+			calibrationValues[finger][0] = value;
+		}
+	}
+}
 
-  currentSettings &= 0b11111000; //Clear Mode bits
-  currentSettings |= mode;
-  writeRegister(ADS1015_ECNTL1, currentSettings);
-}*/
+float ADS1015::mapf(float val, float in_min, float in_max, float out_min, float out_max) {
+	return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
-/*//Checks to see if DRDY flag is set in the status register
+//Set the mode. Continuous mode 0 is favored
+void ADS1015::setMode(uint16_t mode)
+{
+  _mode = mode;
+}
+
+//getMode will return 0 for continuous and 1 for single shot
+uint16_t ADS1015::getMode ()
+{
+  return _mode;
+}
+
+void ADS1015::setGain (uint16_t gain)
+{
+	_gain = gain;
+}
+
+//Will return a different hex value for each gain
+//0x0E00: +/- 0.256V
+//0X0000: +/- 6.144V
+//0X0200: +/- 4.096V
+//0X0400: +/- 2.048V
+//0X0600: +/- 1.024V
+//0X0800: +/- 0.512V
+//0X0A00: +/- 0.256V
+uint16_t ADS1015::getGain ()
+{
+	return _gain;
+}
+
+void ADS1015::setSampleRate (uint16_t sampleRate)
+{
+	_sampleRate = sampleRate;
+}
+
+//Will return a different hex value for each sample rate
+//0x0000: 128 Hz
+//0X0020: 250 Hz
+//0X0040: 490 Hz
+//0X0060: 920 Hz
+//0X0080: 1600 Hz
+//0X00A0: 2400 Hz
+//0X00C0: 3300 Hz
+uint16_t ADS1015::getSampleRate ()
+{
+	return _sampleRate;
+}
+
+//Checks to see if DRDY flag is set in the status register
 boolean ADS1015::available()
 {
-  uint8_t value = readRegister(ADS1015_ST1);
+  uint16_t value = readRegister(ADS1015_POINTER_CONFIG);
   return (value & (1 << 0)); //Bit 0 is DRDY
 }
-
-
-//Does a soft reset
-void ADS1015::softReset()
-{
-  writeRegister(ADS1015_CNTL2, 0xFF);
-}*/
-/*
-//Turn on/off Serial.print statements for debugging
-void ADS1015::enableDebugging(Stream &debugPort)
-{
-  _debugSerial = &debugPort; //Grab which port the user wants us to use for debugging
-
-  _printDebug = true; //Should we print the commands we send? Good for debugging
-}
-void ADS1015::disableDebugging()
-{
-  _printDebug = false; //Turn off extra print statements
-}*/
 
 //Reads from a give location
 uint16_t ADS1015::readRegister(uint8_t location)
@@ -168,9 +198,7 @@ uint16_t ADS1015::readRegister16(byte location)
   uint8_t result;
   _i2cPort->beginTransmission(_i2caddr);
   _i2cPort->write(ADS1015_POINTER_CONVERT);
-  Serial.println("AYYo");
   result = _i2cPort->endTransmission();
-  Serial.println("AYYo");
   _i2cPort->requestFrom((int)_i2caddr, 2);
 
   uint16_t data = _i2cPort->read();
@@ -178,35 +206,4 @@ uint16_t ADS1015::readRegister16(byte location)
 
   return (data);
 }
-
-/** Private functions ***********************/
-
-//If I2C communication fails this function will tell us which error occured
-//Originally from Robotic Materials: https://github.com/RoboticMaterials/FA-I-sensor/blob/master/force_proximity_eval/force_proximity_eval.ino
-/*uint8_t ADS1015::printI2CError(uint8_t errorCode)
-{
-  if (_printDebug == true)
-  {
-    switch (errorCode)
-    {
-      //From: https://www.arduino.cc/en/Reference/WireEndTransmission
-      case 0:
-        _debugSerial->println(F("Success"));
-        break;
-      case 1:
-        _debugSerial->println(F("Data too long to fit in transmit buffer"));
-        break;
-      case 2:
-        _debugSerial->println(F("Received NACK on transmit of address"));
-        break;
-      case 3:
-        _debugSerial->println(F("Received NACK on transmit of data"));
-        break;
-      case 4:
-        _debugSerial->println(F("Unknown error"));
-        break;
-    }
-  }
-  return (errorCode); //No matter what pass the code back out
-}*/
 
