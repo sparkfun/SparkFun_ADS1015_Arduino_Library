@@ -31,18 +31,13 @@
 #include "WProgram.h"
 #endif
 
-
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-
-#include "Wire.h"
-
-#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 //Teensy
 #include "i2c_t3.h"
 
 #else
-//#include "i2c_t3.h"
-//#include "Wire.h"
+#include "Wire.h"
+
 //The catch-all default is 32
 #define I2C_BUFFER_LENGTH 32
 
@@ -132,14 +127,14 @@ class ADS1015 {
     uint16_t readRegister16(byte location); //Reads a 16bit value
 
   private:
-  
-	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 
-	TwoWire *_i2cPort;
-
-	#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+	#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy
 	i2c_t3 *_i2cPort;
+	
+	#else
+	
+	TwoWire *_i2cPort;
 	
 	#endif
 

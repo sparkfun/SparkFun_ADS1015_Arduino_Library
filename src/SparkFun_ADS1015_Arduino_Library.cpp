@@ -27,9 +27,10 @@
 
 //Sets up the sensor for constant read
 //Returns false if sensor does not respond
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 
-boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
+#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
+	//Teensy 3.6
+boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
@@ -40,10 +41,9 @@ boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
 
   return (true); //Success!
 }
+#else
 
-#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
-	//Teensy 3.6
-boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
+boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
