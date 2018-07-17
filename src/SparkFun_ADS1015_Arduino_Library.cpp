@@ -1,8 +1,7 @@
 /*
-  This is a library written for the ADS1015 Human Presence Sensor.
+  This is a library written for the ADS1015 ADC->I2C.
 
-  Written by Nathan Seidle @ SparkFun Electronics, March 10th, 2017
-  Revised by Andy England @ SparkFun Electronics, October 17th, 2017
+  Written by Andy England @ SparkFun Electronics, October 17th, 2017
 
   The sensor uses I2C to communicate, as well as a single (optional)
   interrupt line that is not currently supported in this driver.
@@ -94,7 +93,19 @@ uint16_t ADS1015::getAnalogData(uint8_t channel)
 //Returns a value between 0 and 1 based on how bent the finger is. This function will not work with an uncalibrated sensor
 float ADS1015::getScaledAnalogData (uint8_t channel)
 {
-	return mapf(getAnalogData(channel), calibrationValues[channel][0], calibrationValues[channel][1], 0, 1);
+	float data = mapf(getAnalogData(channel), calibrationValues[channel][0], calibrationValues[channel][1], 0, 1);
+	if (data > 1)
+	{
+		return 1;
+	}
+	else if (data < 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return data;
+	}
 }
 
 void ADS1015::calibrate ()
@@ -102,13 +113,34 @@ void ADS1015::calibrate ()
 	for (int finger = 0; finger < 2; finger++)
 	{
 		uint16_t value = getAnalogData(finger);
-		if ((value > calibrationValues[finger][1] || calibrationValues[finger][1] == 0) && value < 1094)
+		if ((value > calibrationValues[finger][1] || calibrationValues[finger][1] == 0) && value < 1085)
 		{
 			calibrationValues[finger][1] = value;
 		}
 		else if (value < calibrationValues[finger][0] || calibrationValues[finger][0] == 0)
 		{
 			calibrationValues[finger][0] = value;
+		}
+	}
+}
+
+uint16_t ADS1015::getCalibration(uint8_t channel, bool hiLo)
+{
+	return calibrationValues[channel][hiLo];
+}
+
+void ADS1015::setCalibration(uint8_t channel, bool hiLo, uint16_t value)
+{
+	calibrationValues[channel][hiLo] = value;
+}
+
+void ADS1015::resetCalibration()
+{
+	for (int channel = 0; channel < 2; channel++)
+	{
+		for (int hiLo = 0; hiLo < 2; hiLo++)
+		{
+			calibrationValues[channel][hiLo] = 0;			
 		}
 	}
 }

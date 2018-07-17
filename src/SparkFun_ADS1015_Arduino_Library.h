@@ -1,8 +1,7 @@
 /*
   This is a library written for the ADS1015 ADC->I2C.
 
-  Written by Nathan Seidle @ SparkFun Electronics, March 10th, 2017
-  Revised by Andy England @ SparkFun Electronics, October 17th, 2017
+  Written by Andy England @ SparkFun Electronics, October 17th, 2017
 
   The sensor uses I2C to communicate, as well as a single (optional)
   interrupt line that is not currently supported in this driver.
@@ -91,11 +90,7 @@
 class ADS1015 {
   public:
     //By default use Wire, standard I2C speed, and the default ADS1015 address
-	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
-
-    boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
-
-	#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
+	#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy
 	boolean begin(i2c_t3 &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
 	
@@ -108,6 +103,9 @@ class ADS1015 {
 	uint16_t getAnalogData(uint8_t channel);
 	float getScaledAnalogData(uint8_t channel);
 	void calibrate();
+	uint16_t getCalibration(uint8_t channel, bool hiLo);
+	void setCalibration(uint8_t channel, bool hiLo, uint16_t value);
+	void resetCalibration();
 	
 	float mapf(float val, float in_min, float in_max, float out_min, float out_max);
 	
