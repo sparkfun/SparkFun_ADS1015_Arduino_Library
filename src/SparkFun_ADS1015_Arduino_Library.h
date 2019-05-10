@@ -80,7 +80,7 @@
 #define ADS1015_CONFIG_RATE_3300HZ   (0x00C0)
 
 #define ADS1015_CONFIG_PGA_MASK      (0X0E00)
-#define ADS1015_CONFIG_PGA_2/3       (0X0000)  // +/- 6.144v
+#define ADS1015_CONFIG_PGA_TWOTHIRDS       (0X0000)  // +/- 6.144v
 #define ADS1015_CONFIG_PGA_1         (0X0200)  // +/- 4.096v
 #define ADS1015_CONFIG_PGA_2         (0X0400)  // +/- 2.048v
 #define ADS1015_CONFIG_PGA_4         (0X0600)  // +/- 1.024v
@@ -139,7 +139,7 @@ class ADS1015 {
 	
 
 	uint16_t _mode = ADS1015_CONFIG_MODE_CONT;
-	uint16_t _gain = ADS1015_CONFIG_PGA_2/3;
+	uint16_t _gain = ADS1015_CONFIG_PGA_TWOTHIRDS;
 	uint16_t _sampleRate = ADS1015_CONFIG_RATE_1600HZ;
 	
     uint8_t _i2caddr;
