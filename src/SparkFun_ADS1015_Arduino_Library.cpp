@@ -210,7 +210,7 @@ uint16_t ADS1015::readRegister(uint8_t location)
   _i2cPort->beginTransmission(_i2caddr);
   _i2cPort->write(ADS1015_POINTER_CONVERT);
   _i2cPort->endTransmission();
-  _i2cPort->requestFrom(_i2caddr, 2); //Ask for one byte
+  _i2cPort->requestFrom((int)_i2caddr, 2); //Ask for one byte
   return (_i2cPort->read() << 8 | _i2cPort->read());
 }
 
