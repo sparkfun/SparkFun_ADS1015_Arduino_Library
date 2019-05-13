@@ -30,6 +30,8 @@ void setup() {
      Serial.println("Device not found. Check wiring.");
      while (1);
   } 
+  
+  fingerSensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 1)
 }
 
 void loop() {  

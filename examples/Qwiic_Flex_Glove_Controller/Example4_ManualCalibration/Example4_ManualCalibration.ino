@@ -48,6 +48,9 @@ void setup() {
      while (1);
   }
   
+  pinkySensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 1)
+  indexSensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 1)  
+  
   //Set the calibration values for the hand.
   for (int channel; channel < 2; channel++)
   {
