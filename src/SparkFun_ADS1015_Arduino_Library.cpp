@@ -29,12 +29,10 @@
 
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy 3.6
-boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
+boolean ADS1015::begin(uint8_t i2caddr, i2c_t3 &wirePort)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
-
-  _i2cPort->setClock(i2cSpeed);
 
   _i2caddr = i2caddr;
 
@@ -42,12 +40,10 @@ boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
 }
 #else
 
-boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
+boolean ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
-
-  _i2cPort->setClock(i2cSpeed);
 
   _i2caddr = i2caddr;
 

@@ -8,9 +8,8 @@
   Feel like supporting our work? Please buy a board from SparkFun!
   https://www.sparkfun.com/products/15334
 
-  This example shows how to output ADC values on one single-ended channel (A3).
-  *at default gain setting of 1 (and 3.3V VCC), 0-2V will read 0-2047.
-  *anything greater than 2V will read 2047.
+  This example shows how to output ADC values on one single-ended channel (A3) with a PGA GAIN of 1. 
+  At this gain setting (and 3.3V VCC), 0-3.3V will read 0-1652.
 
   Hardware Connections and initial setup:
   Plug in your controller board (e.g. Redboard Qwiic) into your computer with USB cable.
@@ -38,6 +37,7 @@ void setup() {
     Serial.println("Device not found. Check wiring.");
     while (1); // stall out forever
   }
+  adcSensor.setGain(ADS1015_CONFIG_PGA_1); // PGA gain set to 1
 }
 
 void loop() {

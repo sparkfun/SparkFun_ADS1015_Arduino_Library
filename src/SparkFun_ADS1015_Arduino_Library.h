@@ -47,12 +47,8 @@
 #define ADS1015_ADDRESS_SDA 0x4A
 #define ADS1015_ADDRESS_SCL 0x4B
 
-#define I2C_SPEED_STANDARD        100000
-#define I2C_SPEED_FAST            400000
-
 //Register addresses
 #define ADS1015_DELAY                (1)
-
 
 //Pointer Register
 #define ADS1015_POINTER_CONVERT      (0x00)
@@ -92,11 +88,11 @@ class ADS1015 {
     //By default use Wire, standard I2C speed, and the default ADS1015 address
 	#if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy
-	boolean begin(i2c_t3 &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
+	boolean begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, i2c_t3 &wirePort = Wire);
 	
 	#else
 	
-	boolean begin(TwoWire &wirePort = Wire, uint32_t i2cSpeed = I2C_SPEED_STANDARD, uint8_t i2caddr = ADS1015_ADDRESS_GND);
+	boolean begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, TwoWire &wirePort = Wire);
 	
 	#endif
 
