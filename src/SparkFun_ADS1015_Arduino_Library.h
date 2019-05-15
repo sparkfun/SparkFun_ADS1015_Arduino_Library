@@ -62,10 +62,15 @@
 #define ADS1015_CONFIG_MODE_CONT     (0x0000)
 #define ADS1015_CONFIG_MODE_SINGLE   (0x0100)
 
-#define ADS1015_CONFIG_MUX_SINGLE_0  (0x4000)
-#define ADS1015_CONFIG_MUX_SINGLE_1  (0x5000)
-#define ADS1015_CONFIG_MUX_SINGLE_2  (0x6000)
-#define ADS1015_CONFIG_MUX_SINGLE_3  (0x7000)
+#define ADS1015_CONFIG_MUX_SINGLE_0    (0x4000)
+#define ADS1015_CONFIG_MUX_SINGLE_1    (0x5000)
+#define ADS1015_CONFIG_MUX_SINGLE_2    (0x6000)
+#define ADS1015_CONFIG_MUX_SINGLE_3    (0x7000)
+#define ADS1015_CONFIG_MUX_DIFF_P0_N1  (0x0000)
+#define ADS1015_CONFIG_MUX_DIFF_P0_N3  (0x1000)
+#define ADS1015_CONFIG_MUX_DIFF_P1_N3  (0x2000)
+#define ADS1015_CONFIG_MUX_DIFF_P2_N3  (0x3000)
+
 
 #define ADS1015_CONFIG_RATE_128HZ    (0x0000)
 #define ADS1015_CONFIG_RATE_250HZ    (0x0020)
@@ -96,7 +101,9 @@ class ADS1015 {
 	
 	#endif
 
-	uint16_t getAnalogData(uint8_t channel);
+	uint16_t getSingleEnded(uint8_t channel);
+	int16_t getDifferential(uint16_t CONFIG_MUX_DIFF = ADS1015_CONFIG_MUX_DIFF_P0_N1);
+	uint16_t getAnalogData(uint8_t channel); // antiquated function; here for backward compatibility
 	float getScaledAnalogData(uint8_t channel);
 	void calibrate();
 	uint16_t getCalibration(uint8_t channel, bool hiLo);
@@ -115,6 +122,8 @@ class ADS1015 {
 
 	void setSampleRate(uint16_t sampleRate);
 	uint16_t getSampleRate();
+	
+	float getMultiplier();
 
     uint16_t readRegister(uint8_t location); //Basic read of a register
     void writeRegister(uint8_t location, uint16_t val); //Writes to a location
@@ -137,6 +146,8 @@ class ADS1015 {
 	uint16_t _mode = ADS1015_CONFIG_MODE_CONT;
 	uint16_t _gain = ADS1015_CONFIG_PGA_2;
 	uint16_t _sampleRate = ADS1015_CONFIG_RATE_1600HZ;
+	float _multiplierToVolts = 1.0F; // at a default gain of 2, the multiplier is 1, also updated in setGain()
+	void updateMultiplierToVolts();
 	
     uint8_t _i2caddr;
 	

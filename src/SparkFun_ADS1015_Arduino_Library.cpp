@@ -51,8 +51,8 @@ boolean ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
 }
 #endif
 
-//Returns the decimal value of sensor channel
-uint16_t ADS1015::getAnalogData(uint8_t channel)
+//Returns the decimal value of sensor channel single-ended input
+uint16_t ADS1015::getSingleEnded(uint8_t channel)
 {
 	if (channel > 3) {
 		return 0;
@@ -84,6 +84,57 @@ uint16_t ADS1015::getAnalogData(uint8_t channel)
 	delay(ADS1015_DELAY);
 	
     return readRegister(ADS1015_POINTER_CONVERT) >> 4;
+}
+
+//Returns the *signed* decimal value of sensor differential input
+//Note, there are 4 possible differential pin setups:
+//ADS1015_CONFIG_MUX_DIFF_P0_N1
+//ADS1015_CONFIG_MUX_DIFF_P0_N3
+//ADS1015_CONFIG_MUX_DIFF_P1_N3
+//ADS1015_CONFIG_MUX_DIFF_P2_N3
+int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
+{
+	// check for valid argument input
+	if (
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P0_N1) ||
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P0_N3) ||
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P1_N3) ||
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P2_N3)
+	)
+	{
+		// valid argument; do nothing and then carry on below
+	}
+	else
+	{
+		return 0; // received invalid argument
+	}
+	
+	uint16_t config = ADS1015_CONFIG_OS_SINGLE   |
+					  _mode |
+					  _sampleRate;
+			
+	config |= _gain;		  
+	
+    config |= CONFIG_MUX_DIFF; // default is ADS1015_CONFIG_MUX_DIFF_P0_N1
+	
+	writeRegister(ADS1015_POINTER_CONFIG, config);
+	delay(ADS1015_DELAY);
+	
+    uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
+	
+    // making sure we keep the sign bit intact
+    if (result > 0x07FF)
+    {
+      // negative number - extend the sign to 16th bit
+      result |= 0xF000;
+    }
+    return (int16_t)result; // cast as a *signed* 16 bit int.
+}
+
+// antiquated function from older library, here for backwards compatibility
+uint16_t ADS1015::getAnalogData(uint8_t channel)
+{
+	return getSingleEnded(channel);
 }
 
 //Returns a value between 0 and 1 based on how bent the finger is. This function will not work with an uncalibrated sensor
@@ -160,6 +211,7 @@ uint16_t ADS1015::getMode ()
 void ADS1015::setGain (uint16_t gain)
 {
 	_gain = gain;
+	updateMultiplierToVolts(); // each new gain setting changes how we convert to volts
 }
 
 //Will return a different hex value for each gain
@@ -173,6 +225,38 @@ void ADS1015::setGain (uint16_t gain)
 uint16_t ADS1015::getGain ()
 {
 	return _gain;
+}
+
+void ADS1015::updateMultiplierToVolts()
+{
+	switch (_gain)
+    {
+    case (ADS1015_CONFIG_PGA_TWOTHIRDS):
+        _multiplierToVolts = 3.0F;
+        break;
+    case (ADS1015_CONFIG_PGA_1):
+        _multiplierToVolts = 2.0F;
+        break;
+    case (ADS1015_CONFIG_PGA_2):
+        _multiplierToVolts = 1.0F;
+        break;
+    case (ADS1015_CONFIG_PGA_4):
+        _multiplierToVolts = 0.5F;
+        break;
+    case (ADS1015_CONFIG_PGA_8):
+        _multiplierToVolts = 0.25F;
+        break;
+    case (ADS1015_CONFIG_PGA_16):
+        _multiplierToVolts = 0.125F;
+        break;		
+	default:
+		_multiplierToVolts = 1.0F;
+    }
+}
+
+float ADS1015::getMultiplier()
+{
+  return _multiplierToVolts;
 }
 
 void ADS1015::setSampleRate (uint16_t sampleRate)
