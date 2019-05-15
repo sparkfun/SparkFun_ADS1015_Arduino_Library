@@ -21,7 +21,7 @@
 
 */
 
-#include <SparkFun_ADS1015_Arduino_Library.h>
+#include <SparkFun_ADS1015_Arduino_Library.h> //Click here to get the library: http://librarymanager/All#SparkFun_ADS1015
 #include <Wire.h>
 
 ADS1015 adcSensor;
