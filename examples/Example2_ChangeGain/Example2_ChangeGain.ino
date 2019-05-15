@@ -11,6 +11,17 @@
   This example shows how to output ADC values on one single-ended channel (A3) with a PGA GAIN of 1. 
   At this gain setting (and 3.3V VCC), 0-3.3V will read 0-1652.
 
+  Other possible gain settings are as follows. 
+  Note, changing the gain effects the range of the sensor (aka the max and min voltages it can read).
+  Also note, to avoid damaging your ADC, never exceed VDD (3.3V for a qwiic system).
+
+  ADS1015_CONFIG_PGA_TWOTHIRDS  +/- 6.144v
+  ADS1015_CONFIG_PGA_1          +/- 4.096v (used in this example)
+  ADS1015_CONFIG_PGA_2          +/- 2.048v
+  ADS1015_CONFIG_PGA_4          +/- 1.024v
+  ADS1015_CONFIG_PGA_8          +/- 0.512v
+  ADS1015_CONFIG_PGA_16         +/- 0.256v
+
   Hardware Connections and initial setup:
   Plug in your controller board (e.g. Redboard Qwiic) into your computer with USB cable.
   Connect your Qwiic 12 Bit ADC board to your controller board via a qwiic cable.
