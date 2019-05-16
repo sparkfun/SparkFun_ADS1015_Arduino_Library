@@ -18,7 +18,7 @@
   Connect your Qwiic 12 Bit ADC board to your controller board via a qwiic cable.
   Select TOOLS>>BOARD>>"Arduino/Genuino Uno"
   Select TOOLS>>PORT>> "COM 3" (note, yours may be different)
-  Click upload, and watch streaming data over serial monitor at 115200.
+  Click upload, and watch streaming data over serial monitor at 9600.
 
 */
 
@@ -29,7 +29,7 @@ ADS1015 adcSensor;
 
 void setup() {
   Wire.begin();
-  Serial.begin(115200);
+  Serial.begin(9600);
   if (adcSensor.begin(0x49) == true) // connect to device at address 0x49 (default is 0x48)
     // **note, you must cut a trace and close the "0x49" jumper for this to work.
   {
@@ -43,7 +43,7 @@ void setup() {
 }
 
 void loop() {
-  uint16_t channel_A3 = adcSensor.getAnalogData(3);
+  uint16_t channel_A3 = adcSensor.getSingleEnded(3);
   Serial.print("A3:");
   Serial.println(channel_A3);
   delay(50); // avoid bogging up serial monitor

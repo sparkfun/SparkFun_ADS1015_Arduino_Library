@@ -19,7 +19,7 @@
   Connect your second voltage source to A1
   Select TOOLS>>BOARD>>"Arduino/Genuino Uno"
   Select TOOLS>>PORT>> "COM 3" (note, yours may be different)
-  Click upload, and watch streaming data over serial monitor at 115200.
+  Click upload, and watch streaming data over serial monitor at 9600.
   It will show the voltage difference between A0 and A1 (also showing negative differences (if present).
 
 */
@@ -31,7 +31,7 @@ ADS1015 adcSensor;
 
 void setup() {
   Wire.begin();
-  Serial.begin(115200);
+  Serial.begin(9600);
   if (adcSensor.begin() == true)
   {
     Serial.println("Device found. I2C connections are good.");
@@ -51,11 +51,6 @@ void loop() {
   // int16_t input = adcSensor.getDifferential(ADS1015_CONFIG_MUX_DIFF_P2_N3);
   
   Serial.print("Differential: ");
-  Serial.print(input);
-  Serial.print("\t(");
-  float multiplier = adcSensor.getMultiplier(); // used to convert readings to actual voltages (in mV units)
-  // the private varaible _multiplierToVolts is auto-updated each time setGain is called
-  Serial.print(input * multiplier);
-  Serial.println("mV)");
+  Serial.println(input);
   delay(50); // avoid bogging up serial monitor
 }
