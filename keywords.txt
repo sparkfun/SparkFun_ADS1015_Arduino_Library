@@ -19,6 +19,8 @@ getDifferential						KEYWORD2
 getMultiplier						KEYWORD2
 getAnalogData						KEYWORD2
 getScaledAnalogData					KEYWORD2
+setComparatorSingleEnded			KEYWORD2
+getLastConversionResults			KEYWORD2
 
 calibrate							KEYW0RD2
 getCalibration						KEYW0RD2

@@ -332,3 +332,85 @@ uint16_t ADS1015::readRegister16(byte location)
   return (data);
 }
 
+/**************************************************************************/
+/*!
+    @brief  Sets up the comparator to operate in basic mode, causing the
+            ALERT/RDY pin to assert (go from high to low) when the ADC
+            value exceeds the specified threshold.
+
+            This will also set the ADC in continuous conversion mode.
+			
+			Note, this function was adapted from the Adafruit Industries
+			located here:
+			https://github.com/adafruit/Adafruit_ADS1X15
+*/
+/**************************************************************************/
+void ADS1015::setComparatorSingleEnded(uint8_t channel, int16_t threshold)
+{
+	if (channel > 3) {
+		return 0;
+	}
+	
+	uint16_t config = 
+					ADS1015_CONFIG_MODE_CONT |
+					_sampleRate |
+					ADS1015_CONFIG_CQUE_1CONV   | 	// Comparator enabled and asserts on 1 match
+                    ADS1015_CONFIG_CLAT_LATCH   | 	// Latching mode
+                    ADS1015_CONFIG_CPOL_ACTVLOW | 	// Alert/Rdy active low   (default val)
+                    ADS1015_CONFIG_CMODE_TRAD; 		// Traditional comparator (default val)
+			
+	config |= _gain;		  
+	
+	switch (channel)
+    {
+    case (0):
+        config |= ADS1015_CONFIG_MUX_SINGLE_0;
+        break;
+    case (1):
+        config |= ADS1015_CONFIG_MUX_SINGLE_1;
+        break;
+    case (2):
+        config |= ADS1015_CONFIG_MUX_SINGLE_2;
+        break;
+    case (3):
+        config |= ADS1015_CONFIG_MUX_SINGLE_3;
+        break;
+    }
+	
+	// Set the high threshold register
+	// Shift 12-bit results left 4 bits for the ADS1015
+	writeRegister(ADS1015_POINTER_HITHRESH, threshold << 4);
+
+	// Write config register to the ADC
+	writeRegister(ADS1015_POINTER_CONFIG, config);
+}
+
+/**************************************************************************/
+/*!
+    @brief  In order to clear the comparator, we need to read the
+            conversion results.  This function reads the last conversion
+            results without changing the config value.
+			
+			Note, this function was adapted from the Adafruit Industries
+			located here:
+			https://github.com/adafruit/Adafruit_ADS1X15
+*/
+/**************************************************************************/
+int16_t ADS1015::getLastConversionResults()
+{
+	// Wait for the conversion to complete
+	delay(ADS1015_DELAY);
+
+	// Read the conversion results
+	uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
+
+	// Shift 12-bit results right 4 bits for the ADS1015,
+	// making sure we keep the sign bit intact
+	if (result > 0x07FF)
+	{
+	  // negative number - extend the sign to 16th bit
+	  result |= 0xF000;
+	}
+	return (int16_t)result;
+}
+

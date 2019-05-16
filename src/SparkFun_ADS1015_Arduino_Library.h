@@ -53,6 +53,8 @@
 //Pointer Register
 #define ADS1015_POINTER_CONVERT      (0x00)
 #define ADS1015_POINTER_CONFIG       (0x01)
+#define ADS1015_POINTER_LOWTHRESH    (0x02)
+#define ADS1015_POINTER_HITHRESH     (0x03)
 
 #define ADS1015_CONFIG_OS_NO         (0x8000)
 #define ADS1015_CONFIG_OS_SINGLE     (0x8000)
@@ -87,6 +89,18 @@
 #define ADS1015_CONFIG_PGA_4         (0X0600)  // +/- 1.024v
 #define ADS1015_CONFIG_PGA_8         (0X0800)  // +/- 0.512v
 #define ADS1015_CONFIG_PGA_16        (0X0A00)  // +/- 0.256v
+
+#define ADS1015_CONFIG_CMODE_TRAD   (0x0000)  // Traditional comparator with hysteresis (default)
+#define ADS1015_CONFIG_CMODE_WINDOW (0x0010)  // Window comparator
+#define ADS1015_CONFIG_CPOL_ACTVLOW (0x0000)  // ALERT/RDY pin is low when active (default)
+#define ADS1015_CONFIG_CPOL_ACTVHI  (0x0008)  // ALERT/RDY pin is high when active
+#define ADS1015_CONFIG_CLAT_NONLAT  (0x0000)  // Non-latching comparator (default)
+#define ADS1015_CONFIG_CLAT_LATCH   (0x0004)  // Latching comparator    
+#define ADS1015_CONFIG_CQUE_1CONV   (0x0000)  // Assert ALERT/RDY after one conversions
+#define ADS1015_CONFIG_CQUE_2CONV   (0x0001)  // Assert ALERT/RDY after two conversions
+#define ADS1015_CONFIG_CQUE_4CONV   (0x0002)  // Assert ALERT/RDY after four conversions
+#define ADS1015_CONFIG_CQUE_NONE    (0x0003)  // Disable the comparator and put ALERT/RDY in high state (default)
+
 
 class ADS1015 {
   public:
@@ -129,6 +143,9 @@ class ADS1015 {
     uint16_t readRegister(uint8_t location); //Basic read of a register
     void writeRegister(uint8_t location, uint16_t val); //Writes to a location
     uint16_t readRegister16(byte location); //Reads a 16bit value
+	
+	void setComparatorSingleEnded(uint8_t channel, int16_t threshold);
+	int16_t getLastConversionResults();
 
   private:
 
