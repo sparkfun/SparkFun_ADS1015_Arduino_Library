@@ -41,7 +41,6 @@ void setup() {
     Serial.println("Device not found. Check wiring.");
     while (1); // stall out forever
   }
-  adcSensor.setGain(ADS1015_CONFIG_PGA_2);
 }
 
 void loop() {
