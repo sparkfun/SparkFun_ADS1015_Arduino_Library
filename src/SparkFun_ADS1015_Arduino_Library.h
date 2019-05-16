@@ -100,7 +100,8 @@ class ADS1015 {
 	boolean begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, TwoWire &wirePort = Wire);
 	
 	#endif
-
+    boolean isConnected(); //Checks if sensor ack's the I2C request
+	
 	uint16_t getSingleEnded(uint8_t channel);
 	int16_t getDifferential(uint16_t CONFIG_MUX_DIFF = ADS1015_CONFIG_MUX_DIFF_P0_N1);
 	uint16_t getAnalogData(uint8_t channel); // antiquated function; here for backward compatibility

@@ -36,7 +36,9 @@ boolean ADS1015::begin(uint8_t i2caddr, i2c_t3 &wirePort)
 
   _i2caddr = i2caddr;
 
-  return (true); //Success!
+  if (isConnected() == false) return (false); //Check for sensor presence
+
+  return (true); //We're all setup!
 }
 #else
 
@@ -47,9 +49,20 @@ boolean ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
 
   _i2caddr = i2caddr;
 
-  return (true); //Success!
+  if (isConnected() == false) return (false); //Check for sensor presence
+
+  return (true); //We're all setup!
 }
 #endif
+
+//Returns true if I2C device ack's
+boolean ADS1015::isConnected()
+{
+  _i2cPort->beginTransmission((uint8_t)_i2caddr);
+  if (_i2cPort->endTransmission() != 0)
+    return (false); //Sensor did not ACK
+  return (true);
+}
 
 //Returns the decimal value of sensor channel single-ended input
 uint16_t ADS1015::getSingleEnded(uint8_t channel)
