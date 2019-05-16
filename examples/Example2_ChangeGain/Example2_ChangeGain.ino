@@ -52,7 +52,7 @@ void setup() {
 }
 
 void loop() {
-  uint16_t channel_A3 = adcSensor.getAnalogData(0);
+  uint16_t channel_A3 = adcSensor.getAnalogData(3);
   Serial.print("A3:");
   Serial.println(channel_A3);
   delay(50); // avoid bogging up serial monitor
