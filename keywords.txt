@@ -14,8 +14,13 @@ ADS1015							KEYWORD1
 
 begin								KEYWORD2
 
+getSingleEnded						KEYWORD2
+getDifferential						KEYWORD2
+getMultiplier						KEYWORD2
 getAnalogData						KEYWORD2
 getScaledAnalogData					KEYWORD2
+setComparatorSingleEnded			KEYWORD2
+getLastConversionResults			KEYWORD2
 
 calibrate							KEYW0RD2
 getCalibration						KEYW0RD2
@@ -80,7 +85,7 @@ ADS1015_CONFIG_RATE_2400HZ   		LITERAL1
 ADS1015_CONFIG_RATE_3300HZ   		LITERAL1
 
 ADS1015_CONFIG_PGA_MASK     		LITERAL1
-ADS1015_CONFIG_PGA_2/3      		LITERAL1
+ADS1015_CONFIG_PGA_TWOTHIRDS      		LITERAL1
 ADS1015_CONFIG_PGA_1        		LITERAL1
 ADS1015_CONFIG_PGA_2      			LITERAL1
 ADS1015_CONFIG_PGA_4        		LITERAL1

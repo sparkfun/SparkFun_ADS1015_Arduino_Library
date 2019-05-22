@@ -17,39 +17,31 @@
 */
 
 #include <SparkFun_ADS1015_Arduino_Library.h>
+#include <Wire.h>
 
-ADS1015 pinkySensor;
-ADS1015 indexSensor;
-uint16_t hand[4] = {0, 0, 0, 0};
+ADS1015 fingerSensor;
 
-void setup() { 
+void setup() {
+  
   Wire.begin();
   Serial.begin(115200);
-
-  //Set up each sensor, change the addresses based on the location of each sensor
-  if (pinkySensor.begin(Wire, 100000, ADS1015_ADDRESS_SDA) == false) {
-     Serial.println("Pinky not found. Check wiring.");
+  
+  if (fingerSensor.begin() == false) {
+     Serial.println("Device not found. Check wiring.");
      while (1);
-  }
-  if (indexSensor.begin(Wire, 100000, ADS1015_ADDRESS_GND) == false) {
-     Serial.println("Index not found. Check wiring.");
-     while (1);
-  }  
+  } 
+  
+  fingerSensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 2)
 }
 
 void loop() {  
   uint16_t data;
-  //Read and print our data
   for (int finger = 0; finger < 2; finger++) {
-    hand[finger] = indexSensor.getAnalogData(finger);
-    hand[finger + 2] = pinkySensor.getAnalogData(finger);
-  }
-  for (int finger = 0; finger < 4; finger++)
-  {
+    data = fingerSensor.getAnalogData(finger);
     Serial.print(finger);
     Serial.print(": ");
-    Serial.print(hand[finger]);
-    Serial.print(" ");
+    Serial.print(data);
+    Serial.print(",");
   }
   Serial.println();
 }

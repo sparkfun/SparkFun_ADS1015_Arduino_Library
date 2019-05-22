@@ -37,16 +37,19 @@ void setup() {
   Serial.begin(115200);
   
   //Begin our finger sensors, change addresses as needed.
-  if (pinkySensor.begin(Wire, 100000, ADS1015_ADDRESS_SDA) == false) 
+  if (pinkySensor.begin(ADS1015_ADDRESS_SDA) == false) 
   {
      Serial.println("Pinky not found. Check wiring.");
      while (1);
   }
-  if (indexSensor.begin(Wire, 100000, ADS1015_ADDRESS_GND) == false) 
+  if (indexSensor.begin(ADS1015_ADDRESS_GND) == false) 
   {
      Serial.println("Index not found. Check wiring.");
      while (1);
   }
+  
+  pinkySensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 2)
+  indexSensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 2)  
   
   //Set the calibration values for the hand.
   for (int channel; channel < 2; channel++)

@@ -26,10 +26,12 @@ void setup() {
   Wire.begin();
   Serial.begin(115200);
   
-  if (fingerSensor.begin(Wire, 100000, ADS1015_ADDRESS_GND) == false) {
+  if (fingerSensor.begin(ADS1015_ADDRESS_GND) == false) {
      Serial.println("Device not found. Check wiring.");
      while (1);
   }
+  fingerSensor.setGain(ADS1015_CONFIG_PGA_TWOTHIRDS); // Gain of 2/3 to works well with flex glove board voltage swings (default is gain of 2)
+  
   Serial.println("Calibrating, flex all sensors through full range of motion multiple times, send 'e' when finished");
 }
 

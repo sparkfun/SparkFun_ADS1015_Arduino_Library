@@ -29,34 +29,43 @@
 
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	//Teensy 3.6
-boolean ADS1015::begin(i2c_t3 &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
+boolean ADS1015::begin(uint8_t i2caddr, i2c_t3 &wirePort)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
 
-  _i2cPort->setClock(i2cSpeed);
-
   _i2caddr = i2caddr;
 
-  return (true); //Success!
+  if (isConnected() == false) return (false); //Check for sensor presence
+
+  return (true); //We're all setup!
 }
 #else
 
-boolean ADS1015::begin(TwoWire &wirePort, uint32_t i2cSpeed, uint8_t i2caddr)
+boolean ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
 {
   //Bring in the user's choices
   _i2cPort = &wirePort; //Grab which port the user wants us to use
 
-  _i2cPort->setClock(i2cSpeed);
-
   _i2caddr = i2caddr;
 
-  return (true); //Success!
+  if (isConnected() == false) return (false); //Check for sensor presence
+
+  return (true); //We're all setup!
 }
 #endif
 
-//Returns the decimal value of sensor channel
-uint16_t ADS1015::getAnalogData(uint8_t channel)
+//Returns true if I2C device ack's
+boolean ADS1015::isConnected()
+{
+  _i2cPort->beginTransmission((uint8_t)_i2caddr);
+  if (_i2cPort->endTransmission() != 0)
+    return (false); //Sensor did not ACK
+  return (true);
+}
+
+//Returns the decimal value of sensor channel single-ended input
+uint16_t ADS1015::getSingleEnded(uint8_t channel)
 {
 	if (channel > 3) {
 		return 0;
@@ -88,6 +97,57 @@ uint16_t ADS1015::getAnalogData(uint8_t channel)
 	delay(ADS1015_DELAY);
 	
     return readRegister(ADS1015_POINTER_CONVERT) >> 4;
+}
+
+//Returns the *signed* decimal value of sensor differential input
+//Note, there are 4 possible differential pin setups:
+//ADS1015_CONFIG_MUX_DIFF_P0_N1
+//ADS1015_CONFIG_MUX_DIFF_P0_N3
+//ADS1015_CONFIG_MUX_DIFF_P1_N3
+//ADS1015_CONFIG_MUX_DIFF_P2_N3
+int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
+{
+	// check for valid argument input
+	if (
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P0_N1) ||
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P0_N3) ||
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P1_N3) ||
+	(CONFIG_MUX_DIFF == ADS1015_CONFIG_MUX_DIFF_P2_N3)
+	)
+	{
+		// valid argument; do nothing and then carry on below
+	}
+	else
+	{
+		return 0; // received invalid argument
+	}
+	
+	uint16_t config = ADS1015_CONFIG_OS_SINGLE   |
+					  _mode |
+					  _sampleRate;
+			
+	config |= _gain;		  
+	
+    config |= CONFIG_MUX_DIFF; // default is ADS1015_CONFIG_MUX_DIFF_P0_N1
+	
+	writeRegister(ADS1015_POINTER_CONFIG, config);
+	delay(ADS1015_DELAY);
+	
+    uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
+	
+    // making sure we keep the sign bit intact
+    if (result > 0x07FF)
+    {
+      // negative number - extend the sign to 16th bit
+      result |= 0xF000;
+    }
+    return (int16_t)result; // cast as a *signed* 16 bit int.
+}
+
+// antiquated function from older library, here for backwards compatibility
+uint16_t ADS1015::getAnalogData(uint8_t channel)
+{
+	return getSingleEnded(channel);
 }
 
 //Returns a value between 0 and 1 based on how bent the finger is. This function will not work with an uncalibrated sensor
@@ -164,6 +224,7 @@ uint16_t ADS1015::getMode ()
 void ADS1015::setGain (uint16_t gain)
 {
 	_gain = gain;
+	updateMultiplierToVolts(); // each new gain setting changes how we convert to volts
 }
 
 //Will return a different hex value for each gain
@@ -177,6 +238,38 @@ void ADS1015::setGain (uint16_t gain)
 uint16_t ADS1015::getGain ()
 {
 	return _gain;
+}
+
+void ADS1015::updateMultiplierToVolts()
+{
+	switch (_gain)
+    {
+    case (ADS1015_CONFIG_PGA_TWOTHIRDS):
+        _multiplierToVolts = 3.0F;
+        break;
+    case (ADS1015_CONFIG_PGA_1):
+        _multiplierToVolts = 2.0F;
+        break;
+    case (ADS1015_CONFIG_PGA_2):
+        _multiplierToVolts = 1.0F;
+        break;
+    case (ADS1015_CONFIG_PGA_4):
+        _multiplierToVolts = 0.5F;
+        break;
+    case (ADS1015_CONFIG_PGA_8):
+        _multiplierToVolts = 0.25F;
+        break;
+    case (ADS1015_CONFIG_PGA_16):
+        _multiplierToVolts = 0.125F;
+        break;		
+	default:
+		_multiplierToVolts = 1.0F;
+    }
+}
+
+float ADS1015::getMultiplier()
+{
+  return _multiplierToVolts;
 }
 
 void ADS1015::setSampleRate (uint16_t sampleRate)
@@ -210,7 +303,7 @@ uint16_t ADS1015::readRegister(uint8_t location)
   _i2cPort->beginTransmission(_i2caddr);
   _i2cPort->write(ADS1015_POINTER_CONVERT);
   _i2cPort->endTransmission();
-  _i2cPort->requestFrom(_i2caddr, 2); //Ask for one byte
+  _i2cPort->requestFrom((int)_i2caddr, 2); //Ask for one byte
   return (_i2cPort->read() << 8 | _i2cPort->read());
 }
 
@@ -237,5 +330,87 @@ uint16_t ADS1015::readRegister16(byte location)
   data |= (_i2cPort->read() << 8);
 
   return (data);
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sets up the comparator to operate in basic mode, causing the
+            ALERT/RDY pin to assert (go from high to low) when the ADC
+            value exceeds the specified threshold.
+
+            This will also set the ADC in continuous conversion mode.
+			
+			Note, this function was adapted from the Adafruit Industries
+			located here:
+			https://github.com/adafruit/Adafruit_ADS1X15
+*/
+/**************************************************************************/
+void ADS1015::setComparatorSingleEnded(uint8_t channel, int16_t threshold)
+{
+	if (channel > 3) {
+		return 0;
+	}
+	
+	uint16_t config = 
+					ADS1015_CONFIG_MODE_CONT |
+					_sampleRate |
+					ADS1015_CONFIG_CQUE_1CONV   | 	// Comparator enabled and asserts on 1 match
+                    ADS1015_CONFIG_CLAT_LATCH   | 	// Latching mode
+                    ADS1015_CONFIG_CPOL_ACTVLOW | 	// Alert/Rdy active low   (default val)
+                    ADS1015_CONFIG_CMODE_TRAD; 		// Traditional comparator (default val)
+			
+	config |= _gain;		  
+	
+	switch (channel)
+    {
+    case (0):
+        config |= ADS1015_CONFIG_MUX_SINGLE_0;
+        break;
+    case (1):
+        config |= ADS1015_CONFIG_MUX_SINGLE_1;
+        break;
+    case (2):
+        config |= ADS1015_CONFIG_MUX_SINGLE_2;
+        break;
+    case (3):
+        config |= ADS1015_CONFIG_MUX_SINGLE_3;
+        break;
+    }
+	
+	// Set the high threshold register
+	// Shift 12-bit results left 4 bits for the ADS1015
+	writeRegister(ADS1015_POINTER_HITHRESH, threshold << 4);
+
+	// Write config register to the ADC
+	writeRegister(ADS1015_POINTER_CONFIG, config);
+}
+
+/**************************************************************************/
+/*!
+    @brief  In order to clear the comparator, we need to read the
+            conversion results.  This function reads the last conversion
+            results without changing the config value.
+			
+			Note, this function was adapted from the Adafruit Industries
+			located here:
+			https://github.com/adafruit/Adafruit_ADS1X15
+*/
+/**************************************************************************/
+int16_t ADS1015::getLastConversionResults()
+{
+	// Wait for the conversion to complete
+	delay(ADS1015_DELAY);
+
+	// Read the conversion results
+	uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
+
+	// Shift 12-bit results right 4 bits for the ADS1015,
+	// making sure we keep the sign bit intact
+	if (result > 0x07FF)
+	{
+	  // negative number - extend the sign to 16th bit
+	  result |= 0xF000;
+	}
+	return (int16_t)result;
 }
 
