@@ -1,6 +1,6 @@
 SparkFun ADS1015 Arduino Library
 ===========================================================
- Note, this library is written for use with the Texas Instruments ADS1015. It can be used with most hardware designed around this chip. SparkFun has two products that use this chip, and so we have talored the example sketchs (and some of the function names) to make most sense with each of these designs. 
+ Note, this library is written for use with the Texas Instruments ADS1015. It can be used with most hardware designed around this chip. SparkFun has two products that use this chip, and so we have tailored the example sketchs (and some of the function names) to make most sense with each of these designs. 
  
  Please see the product pages and custom hookup guides for more information on the specific parts of this library that work best with each design.
  
