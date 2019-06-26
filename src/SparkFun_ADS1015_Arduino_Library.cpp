@@ -348,7 +348,7 @@ uint16_t ADS1015::readRegister16(byte location)
 void ADS1015::setComparatorSingleEnded(uint8_t channel, int16_t threshold)
 {
 	if (channel > 3) {
-		return 0;
+		return;
 	}
 	
 	uint16_t config = 
