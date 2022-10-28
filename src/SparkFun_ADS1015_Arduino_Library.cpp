@@ -150,6 +150,7 @@ int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
   writeRegister(ADS1015_POINTER_CONFIG, config);
 
   conversionDelay();
+  conversionDelay();
 
   uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
 
@@ -441,20 +442,21 @@ int16_t ADS1015::convertUnsignedToSigned(uint16_t unsigned16)
   return signedUnsigned16.signed16;
 }
 
+// These values were determined experimentally using Example7
 void ADS1015::conversionDelay()
 {
   if (_sampleRate >= ADS1015_CONFIG_RATE_3300HZ)
-    delayMicroseconds(330); // 303us + 25us power-up
+    delayMicroseconds(400); // > (303us + 10% + 25us power-up)
   else if (_sampleRate >= ADS1015_CONFIG_RATE_2400HZ)
-    delayMicroseconds(442); // 417us + 25us power-up
+    delayMicroseconds(500); // > (417us + 10% + 25us power-up)
   else if (_sampleRate >= ADS1015_CONFIG_RATE_1600HZ)
-    delayMicroseconds(650); // 625us + 25us power-up
+    delay(1); // > (625us + 10% + 25us power-up)
   else if (_sampleRate >= ADS1015_CONFIG_RATE_920HZ)
-    delay(1);
-  else if (_sampleRate >= ADS1015_CONFIG_RATE_490HZ)
     delay(2);
-  else if (_sampleRate >= ADS1015_CONFIG_RATE_250HZ)
+  else if (_sampleRate >= ADS1015_CONFIG_RATE_490HZ)
     delay(4);
+  else if (_sampleRate >= ADS1015_CONFIG_RATE_250HZ)
+    delay(8);
   else
-    delay(8); // 128Hz
+    delay(16); // 128Hz
 }

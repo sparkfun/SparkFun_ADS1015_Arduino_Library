@@ -154,6 +154,10 @@ public:
 	void setComparatorSingleEnded(uint8_t channel, int16_t threshold);
 	int16_t getLastConversionResults();
 
+	int16_t convertUnsignedToSigned(uint16_t unsigned16); // Convert uint16_t to int16_t without cast ambiguity
+
+	void conversionDelay(); // Delay for the conversion time (as defined by _sampleRate)
+
 private:
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	// Teensy
@@ -170,10 +174,6 @@ private:
 	uint16_t _sampleRate = ADS1015_CONFIG_RATE_1600HZ;
 	float _multiplierToVolts = 1.0F; // at a default gain of 2, the multiplier is 1, also updated in setGain()
 	void updateMultiplierToVolts();
-
-	int16_t convertUnsignedToSigned(uint16_t unsigned16); // Convert uint16_t to int16_t without cast ambiguity
-
-	void conversionDelay();
 
 	uint8_t _i2caddr;
 
