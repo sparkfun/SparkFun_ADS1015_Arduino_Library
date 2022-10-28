@@ -102,6 +102,18 @@ uint16_t ADS1015::getSingleEnded(uint8_t channel)
   return readRegister(ADS1015_POINTER_CONVERT) >> 4;
 }
 
+// Returns the sensor channel single-ended input as int16_t (two's complement)
+int16_t ADS1015::getSingleEndedSigned(uint8_t channel)
+{
+  uint16_t result = getSingleEnded(channel);
+  if (result > 0x07FF)
+  {
+    // negative number - extend the sign to 16th bit
+    result |= 0xF000;
+  }
+  return (convertUnsignedToSigned(result)); // Convert without ambiguity
+}
+
 // Returns the *signed* decimal value of sensor differential input
 // Note, there are 4 possible differential pin setups:
 // ADS1015_CONFIG_MUX_DIFF_P0_N1
@@ -143,7 +155,8 @@ int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
     // negative number - extend the sign to 16th bit
     result |= 0xF000;
   }
-  return (int16_t)result; // cast as a *signed* 16 bit int.
+  
+  return (convertUnsignedToSigned(result)); // Convert to signed without ambiguity
 }
 
 // antiquated function from older library, here for backwards compatibility
