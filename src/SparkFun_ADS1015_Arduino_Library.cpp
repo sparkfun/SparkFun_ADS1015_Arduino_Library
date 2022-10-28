@@ -97,7 +97,14 @@ uint16_t ADS1015::getSingleEnded(uint8_t channel)
   }
 
   writeRegister(ADS1015_POINTER_CONFIG, config);
-  delay(ADS1015_DELAY);
+
+  while (!available())
+  {
+    if (_sampleRate <= ADS1015_CONFIG_RATE_920HZ)
+      delay(ADS1015_DELAY);
+    else
+      noIntDelay(); // Not great, but something
+  }
 
   return readRegister(ADS1015_POINTER_CONVERT) >> 4;
 }
@@ -145,7 +152,14 @@ int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
   config |= CONFIG_MUX_DIFF; // default is ADS1015_CONFIG_MUX_DIFF_P0_N1
 
   writeRegister(ADS1015_POINTER_CONFIG, config);
-  delay(ADS1015_DELAY);
+
+  while (!available())
+  {
+    if (_sampleRate <= ADS1015_CONFIG_RATE_920HZ)
+      delay(ADS1015_DELAY);
+    else
+      noIntDelay(); // Not great, but something
+  }
 
   uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
 
@@ -231,7 +245,7 @@ void ADS1015::setMode(uint16_t mode)
   _mode = mode;
 }
 
-// getMode will return 0 for continuous and 1 for single shot
+// getMode will return 0 for continuous and ADS1015_CONFIG_MODE_SINGLE for single shot
 uint16_t ADS1015::getMode()
 {
   return _mode;
@@ -310,7 +324,7 @@ uint16_t ADS1015::getSampleRate()
 bool ADS1015::available()
 {
   uint16_t value = readRegister(ADS1015_POINTER_CONFIG);
-  return (value & ADS1015_CONFIG_OS_READY)	// If the OS bit is 1 : the device is not currently performing a conversion (i.e. data is available)
+  return (value & ADS1015_CONFIG_OS_READY) // If the OS bit is 1 : the device is not currently performing a conversion (i.e. data is available)
 }
 
 // Reads from a give location
@@ -323,7 +337,8 @@ uint16_t ADS1015::readRegister(uint8_t location)
     success &= _i2cPort->requestFrom(_i2caddr, 2) == 2; // Ask for two bytes
   if (success)
     return ((((uint16_t)_i2cPort->read()) << 8) | _i2cPort->read()); // MSB first
-  return 0;                                                          // Return zero to indicate an error. Not great, but something...
+
+  return 0; // Return zero to indicate an error. Not great, but something...
 }
 
 // Write a value to a spot
@@ -410,7 +425,13 @@ void ADS1015::setComparatorSingleEnded(uint8_t channel, int16_t threshold)
 int16_t ADS1015::getLastConversionResults()
 {
   // Wait for the conversion to complete
-  //delay(ADS1015_DELAY); Why wait?
+  while (!available())
+  {
+    if (_sampleRate <= ADS1015_CONFIG_RATE_920HZ)
+      delay(ADS1015_DELAY);
+    else
+      noIntDelay(); // Not great, but something
+  }
 
   // Read the conversion results
   // Shift 12-bit results right 4 bits for the ADS1015,
@@ -434,4 +455,17 @@ int16_t ADS1015::convertUnsignedToSigned(uint16_t unsigned16)
   } signedUnsigned16;
   signedUnsigned16.unsigned16 = unsigned16;
   return signedUnsigned16.signed16;
+}
+
+// Software delay. Does not rely on internal timers.
+// Highly processor-clock-dependent but avoids using delayMicroseconds.
+void noIntDelay(uint16_t amount)
+{
+  for (volatile uint16_t y = 0 ; y < amount ; y++)
+  {
+    for (volatile uint16_t x = 0 ; x < 100 ; x++)
+    {
+      __asm__("nop\n\t");
+    }
+  }
 }

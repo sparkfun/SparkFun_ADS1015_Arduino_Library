@@ -171,6 +171,8 @@ private:
 
 	int16_t convertUnsignedToSigned(uint16_t unsigned16); // Convert uint16_t to int16_t without cast ambiguity
 
+	void noIntDelay(uint16_t amount = 1);
+
 	uint8_t _i2caddr;
 
 	// Array is structured as calibrationValues[finger][lo/hi]
