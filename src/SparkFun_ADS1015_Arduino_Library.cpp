@@ -116,6 +116,12 @@ int16_t ADS1015::getSingleEndedSigned(uint8_t channel)
   return (convertUnsignedToSigned(result)); // Convert without ambiguity
 }
 
+// Returns the sensor channel single-ended input as float in millivolts
+float ADS1015::getSingleEndedMillivolts(uint8_t channel)
+{
+  return (((float)getSingleEndedSigned(channel)) * getMultiplier());
+}
+
 // Returns the *signed* decimal value of sensor differential input
 // Note, there are 4 possible differential pin setups:
 // ADS1015_CONFIG_MUX_DIFF_P0_N1
@@ -162,6 +168,12 @@ int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
   }
 
   return (convertUnsignedToSigned(result)); // Convert to signed without ambiguity
+}
+
+// Returns the sensor channel single-ended input as float in millivolts
+float ADS1015::getDifferentialMillivolts(uint16_t CONFIG_MUX_DIFF)
+{
+  return (((float)getDifferential(CONFIG_MUX_DIFF)) * getMultiplier());
 }
 
 // antiquated function from older library, here for backwards compatibility
