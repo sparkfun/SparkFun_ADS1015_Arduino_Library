@@ -29,7 +29,7 @@
 
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 // Teensy 3.6
-boolean ADS1015::begin(uint8_t i2caddr, i2c_t3 &wirePort)
+bool ADS1015::begin(uint8_t i2caddr, i2c_t3 &wirePort)
 {
   // Bring in the user's choices
   _i2cPort = &wirePort; // Grab which port the user wants us to use
@@ -43,7 +43,7 @@ boolean ADS1015::begin(uint8_t i2caddr, i2c_t3 &wirePort)
 }
 #else
 
-boolean ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
+bool ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
 {
   // Bring in the user's choices
   _i2cPort = &wirePort; // Grab which port the user wants us to use
@@ -58,7 +58,7 @@ boolean ADS1015::begin(uint8_t i2caddr, TwoWire &wirePort)
 #endif
 
 // Returns true if I2C device ack's
-boolean ADS1015::isConnected()
+bool ADS1015::isConnected()
 {
   _i2cPort->beginTransmission((uint8_t)_i2caddr);
   if (_i2cPort->endTransmission() != 0)
@@ -307,7 +307,7 @@ uint16_t ADS1015::getSampleRate()
 }
 
 // Checks to see if the Operational Status (OS) flag is set in the status register
-boolean ADS1015::available()
+bool ADS1015::available()
 {
   uint16_t value = readRegister(ADS1015_POINTER_CONFIG);
   return (value & ADS1015_CONFIG_OS_READY)	// If the OS bit is 1 : the device is not currently performing a conversion (i.e. data is available)

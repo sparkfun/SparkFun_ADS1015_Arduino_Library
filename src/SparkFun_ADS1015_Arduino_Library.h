@@ -111,14 +111,14 @@ public:
 // By default use Wire, standard I2C speed, and the default ADS1015 address
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	// Teensy
-	boolean begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, i2c_t3 &wirePort = Wire);
+	bool begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, i2c_t3 &wirePort = Wire);
 
 #else
 
-	boolean begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, TwoWire &wirePort = Wire);
+	bool begin(uint8_t i2caddr = ADS1015_ADDRESS_GND, TwoWire &wirePort = Wire);
 
 #endif
-	boolean isConnected(); // Checks if sensor ack's the I2C request
+	bool isConnected(); // Checks if sensor ack's the I2C request
 
 	uint16_t getSingleEnded(uint8_t channel);
 	int16_t getSingleEndedSigned(uint8_t channel);
@@ -132,7 +132,7 @@ public:
 
 	float mapf(float val, float in_min, float in_max, float out_min, float out_max);
 
-	boolean available(); // True if OS bit is set
+	bool available(); // True if OS bit is set
 
 	void setMode(uint16_t mode); // Set mode of the sensor. Mode 0 is continuous read mode
 	uint16_t getMode();
@@ -176,7 +176,7 @@ private:
 	// Array is structured as calibrationValues[finger][lo/hi]
 	uint16_t calibrationValues[2][2] = {{0, 0}, {0, 0}};
 
-	boolean _printDebug = false; // Flag to print the serial commands we are sending to the Serial port for debug
+	bool _printDebug = false; // Flag to print the serial commands we are sending to the Serial port for debug
 
 	Stream *_debugSerial; // The stream to send debug messages to if enabled
 };
