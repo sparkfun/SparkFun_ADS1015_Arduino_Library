@@ -245,6 +245,7 @@ float ADS1015::mapf(float val, float in_min, float in_max, float out_min, float 
 // Set the mode. Continuous mode 0 is favored
 void ADS1015::setMode(uint16_t mode)
 {
+  mode &= ADS1015_CONFIG_MODE_SINGLE;
   _mode = mode;
 }
 
@@ -256,6 +257,7 @@ uint16_t ADS1015::getMode()
 
 void ADS1015::setGain(uint16_t gain)
 {
+  gain &= ADS1015_CONFIG_PGA_MASK;
   _gain = gain;
   updateMultiplierToVolts(); // each new gain setting changes how we convert to volts
 }
@@ -307,6 +309,7 @@ float ADS1015::getMultiplier()
 
 void ADS1015::setSampleRate(uint16_t sampleRate)
 {
+  sampleRate &= ADS1015_CONFIG_RATE_MASK;
   _sampleRate = sampleRate;
 }
 
