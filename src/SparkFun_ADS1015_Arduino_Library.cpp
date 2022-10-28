@@ -155,7 +155,7 @@ int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
     // negative number - extend the sign to 16th bit
     result |= 0xF000;
   }
-  
+
   return (convertUnsignedToSigned(result)); // Convert to signed without ambiguity
 }
 
@@ -306,11 +306,11 @@ uint16_t ADS1015::getSampleRate()
   return _sampleRate;
 }
 
-// Checks to see if DRDY flag is set in the status register
+// Checks to see if the Operational Status (OS) flag is set in the status register
 boolean ADS1015::available()
 {
   uint16_t value = readRegister(ADS1015_POINTER_CONFIG);
-  return (value & (1 << 0)); // Bit 0 is DRDY
+  return (value & ADS1015_CONFIG_OS_READY)	// If the OS bit is 1 : the device is not currently performing a conversion (i.e. data is available)
 }
 
 // Reads from a give location
