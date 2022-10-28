@@ -397,17 +397,28 @@ void ADS1015::setComparatorSingleEnded(uint8_t channel, int16_t threshold)
 int16_t ADS1015::getLastConversionResults()
 {
   // Wait for the conversion to complete
-  delay(ADS1015_DELAY);
+  //delay(ADS1015_DELAY); Why wait?
 
   // Read the conversion results
-  uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
-
   // Shift 12-bit results right 4 bits for the ADS1015,
   // making sure we keep the sign bit intact
+  uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
   if (result > 0x07FF)
   {
     // negative number - extend the sign to 16th bit
     result |= 0xF000;
   }
-  return (int16_t)result;
+  return (convertUnsignedToSigned(result));
+}
+
+// Convert uint16_t to int16_t without cast ambiguity
+int16_t ADS1015::convertUnsignedToSigned(uint16_t unsigned16)
+{
+  union
+  {
+    int16_t signed16;
+    uint16_t unsigned16;
+  } signedUnsigned16;
+  signedUnsigned16.unsigned16 = unsigned16;
+  return signedUnsigned16.signed16;
 }

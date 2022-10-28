@@ -168,6 +168,8 @@ private:
 	float _multiplierToVolts = 1.0F; // at a default gain of 2, the multiplier is 1, also updated in setGain()
 	void updateMultiplierToVolts();
 
+	int16_t convertUnsignedToSigned(uint16_t unsigned16); // Convert uint16_t to int16_t without cast ambiguity
+
 	uint8_t _i2caddr;
 
 	// Array is structured as calibrationValues[finger][lo/hi]
