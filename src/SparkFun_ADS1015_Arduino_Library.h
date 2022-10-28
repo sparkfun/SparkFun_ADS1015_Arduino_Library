@@ -56,10 +56,15 @@
 #define ADS1015_POINTER_LOWTHRESH    (0x02)
 #define ADS1015_POINTER_HITHRESH     (0x03)
 
-#define ADS1015_CONFIG_OS_NO         (0x8000)
-#define ADS1015_CONFIG_OS_SINGLE     (0x8000)
-#define ADS1015_CONFIG_OS_READY      (0x0000)
-#define ADS1015_CONFIG_OS_NOTREADY   (0x8000)
+//Config Register
+
+// Operational status or single-shot conversion start
+// This bit determines the operational status of the device. OS can only be written
+// when in power-down state and has no effect when a conversion is ongoing.
+#define ADS1015_CONFIG_OS_NO         (0x0000)
+#define ADS1015_CONFIG_OS_SINGLE     (0x8000) // 1 : Start a single conversion (when in power-down state)
+#define ADS1015_CONFIG_OS_NOTREADY   (0x0000) // 0 : Device is currently performing a conversion
+#define ADS1015_CONFIG_OS_READY      (0x8000) // 1 : Device is not currently performing a conversion
 
 #define ADS1015_CONFIG_MODE_CONT     (0x0000)
 #define ADS1015_CONFIG_MODE_SINGLE   (0x0100)
@@ -72,7 +77,6 @@
 #define ADS1015_CONFIG_MUX_DIFF_P0_N3  (0x1000)
 #define ADS1015_CONFIG_MUX_DIFF_P1_N3  (0x2000)
 #define ADS1015_CONFIG_MUX_DIFF_P2_N3  (0x3000)
-
 
 #define ADS1015_CONFIG_RATE_128HZ    (0x0000)
 #define ADS1015_CONFIG_RATE_250HZ    (0x0020)
