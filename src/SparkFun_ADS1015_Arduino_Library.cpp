@@ -96,7 +96,7 @@ uint16_t ADS1015::getSingleEnded(uint8_t channel)
 	writeRegister(ADS1015_POINTER_CONFIG, config);
 	delay(ADS1015_DELAY);
 	
-    return readRegister(ADS1015_POINTER_CONVERT) >> 4;
+  return readRegister(ADS1015_POINTER_CONVERT) >> 4;
 }
 
 //Returns the *signed* decimal value of sensor differential input
@@ -302,34 +302,28 @@ uint16_t ADS1015::readRegister(uint8_t location)
 {
   _i2cPort->beginTransmission(_i2caddr);
   _i2cPort->write(location);
-  _i2cPort->endTransmission();
-  _i2cPort->requestFrom((int)_i2caddr, 2); //Ask for two bytes
-  return (_i2cPort->read() << 8 | _i2cPort->read());
+  bool success = _i2cPort->endTransmission() == 0;
+  if (success)
+    success &= _i2cPort->requestFrom(_i2caddr, 2) == 2; //Ask for two bytes
+  if (success)
+    return ((((uint16_t)_i2cPort->read()) << 8) | _i2cPort->read()); // MSB first
+  return 0; // Return zero to indicate an error. Not great, but something...
 }
 
 //Write a value to a spot
-void ADS1015::writeRegister(uint8_t location, uint16_t val)
+bool ADS1015::writeRegister(uint8_t location, uint16_t val)
 {
   _i2cPort->beginTransmission(_i2caddr);
   _i2cPort->write(location);
-  _i2cPort->write((uint8_t)(val >> 8));
+  _i2cPort->write((uint8_t)(val >> 8)); // MSB first
   _i2cPort->write((uint8_t)(val & 0xFF));
-  _i2cPort->endTransmission();
+  return (_i2cPort->endTransmission() == 0);
 }
 
 //Reads a two byte value from a consecutive registers
-uint16_t ADS1015::readRegister16(byte location)
+uint16_t ADS1015::readRegister16(uint8_t location)
 {
-  uint8_t result;
-  _i2cPort->beginTransmission(_i2caddr);
-  _i2cPort->write(ADS1015_POINTER_CONVERT);
-  result = _i2cPort->endTransmission();
-  _i2cPort->requestFrom((int)_i2caddr, 2);
-
-  uint16_t data = _i2cPort->read();
-  data |= (_i2cPort->read() << 8);
-
-  return (data);
+  return (readRegister(location));
 }
 
 /**************************************************************************/
