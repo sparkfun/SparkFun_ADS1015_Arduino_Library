@@ -172,7 +172,7 @@ private:
 
 #endif
 
-	uint16_t _mode = ADS1015_CONFIG_MODE_CONT;
+	uint16_t _mode = ADS1015_CONFIG_MODE_CONT; // Default to continuous mode
 	uint16_t _gain = ADS1015_CONFIG_PGA_2;
 	uint16_t _sampleRate = ADS1015_CONFIG_RATE_1600HZ;
 	float _multiplierToVolts = 1.0F; // at a default gain of 2, the multiplier is 1, also updated in setGain()
