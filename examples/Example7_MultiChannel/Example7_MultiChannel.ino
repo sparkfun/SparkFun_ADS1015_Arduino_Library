@@ -72,6 +72,13 @@ void setup()
   // ADS1015_CONFIG_RATE_2400HZ - 0X00A0 : 2400Hz
   // ADS1015_CONFIG_RATE_3300HZ - 0X00C0 : 3300Hz
   adcSensor.setSampleRate(ADS1015_CONFIG_RATE_1600HZ);
+
+  // For the fastest conversion timing, we need to check the Config Register Operational Status bit
+  // to see when the conversion is complete - instead of using a fixed delay.
+  // However, we can only do this if we use single-shot mode.
+  // Because this breaks backward-compatibility, _useConversionReady is disabled by default.
+  // To enable it, call:
+  adcSensor.useConversionReady(true);
 }
 
 void loop()
@@ -111,5 +118,5 @@ void loop()
 
   Serial.println();
 
-  delay(100);                                       // avoid bogging up serial monitor
+  //Don't delay here. Go as fast as possible. The Serial.print's will set the rate...
 }

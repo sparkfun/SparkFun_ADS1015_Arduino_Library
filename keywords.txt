@@ -51,6 +51,7 @@ getLastConversionResults	KEYWORD2
 
 convertUnsignedToSigned	KEYWORD2
 conversionDelay	KEYWORD2
+useConversionReady	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

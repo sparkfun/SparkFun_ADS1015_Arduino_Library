@@ -76,10 +76,14 @@ uint16_t ADS1015::getSingleEnded(uint8_t channel)
 
   uint16_t config = ADS1015_CONFIG_OS_SINGLE |
                     ADS1015_CONFIG_CQUE_NONE |
-                    _mode |
                     _sampleRate;
 
   config |= _gain;
+
+  if (_useConversionReady)
+    config |= ADS1015_CONFIG_MODE_SINGLE;
+  else
+    config |= _mode;
 
   switch (channel)
   {
@@ -99,7 +103,13 @@ uint16_t ADS1015::getSingleEnded(uint8_t channel)
 
   writeRegister(ADS1015_POINTER_CONFIG, config);
 
-  conversionDelay();
+  if (_useConversionReady)
+  {
+    while (!available())
+      yield();
+  }
+  else
+    conversionDelay();
 
   return readRegister(ADS1015_POINTER_CONVERT) >> 4;
 }
@@ -146,17 +156,26 @@ int16_t ADS1015::getDifferential(uint16_t CONFIG_MUX_DIFF)
 
   uint16_t config = ADS1015_CONFIG_OS_SINGLE |
                     ADS1015_CONFIG_CQUE_NONE |
-                    _mode |
                     _sampleRate;
 
   config |= _gain;
+
+  if (_useConversionReady)
+    config |= ADS1015_CONFIG_MODE_SINGLE;
+  else
+    config |= _mode;
 
   config |= CONFIG_MUX_DIFF; // default is ADS1015_CONFIG_MUX_DIFF_P0_N1
 
   writeRegister(ADS1015_POINTER_CONFIG, config);
 
-  conversionDelay();
-  conversionDelay();
+  if (_useConversionReady)
+  {
+    while (!available())
+      yield();
+  }
+  else
+    conversionDelay();
 
   uint16_t result = readRegister(ADS1015_POINTER_CONVERT) >> 4;
 

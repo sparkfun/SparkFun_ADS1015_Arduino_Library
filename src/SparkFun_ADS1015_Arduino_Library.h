@@ -161,6 +161,12 @@ public:
 
 	void conversionDelay(); // Delay for the conversion time (as defined by _sampleRate)
 
+	// When useConversionReady is enabled:
+	//   The Config Register OS bit is read to determine when the conversion is complete - instead of using conversionDelay.
+	//   Single-shot mode is always selected. _mode is ignored.
+	// Defaults to false for backward-compatibility.
+	void useConversionReady(bool enable) { _useConversionReady = enable; }
+
 private:
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__)
 	// Teensy
@@ -173,6 +179,7 @@ private:
 #endif
 
 	uint16_t _mode = ADS1015_CONFIG_MODE_CONT; // Default to continuous mode
+	bool _useConversionReady = false; // Default to disabled, allowing continuous mode to be used.
 	uint16_t _gain = ADS1015_CONFIG_PGA_2;
 	uint16_t _sampleRate = ADS1015_CONFIG_RATE_1600HZ;
 	float _multiplierToVolts = 1.0F; // at a default gain of 2, the multiplier is 1, also updated in setGain()
